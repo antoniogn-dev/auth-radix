@@ -1,8 +1,11 @@
 "use client"
 
-import { Button, Flex, Text, TextField } from "@radix-ui/themes"
+import { Flex, Text, TextField } from "@radix-ui/themes"
 import { EnvelopeClosedIcon, LockClosedIcon } from "@radix-ui/react-icons"
 import { Controller, useForm } from "react-hook-form"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
+
 
 interface SigninData {
     email: string
@@ -11,6 +14,8 @@ interface SigninData {
 
 const SigninForm = () => {
 
+    const router = useRouter()
+
     const { control, handleSubmit, formState: { errors } } = useForm<SigninData>({
         defaultValues: {
             email: "",
@@ -18,12 +23,23 @@ const SigninForm = () => {
         }
     })
 
-    const onSubmit = (data: SigninData) => {
-        console.log(data)
-    }
+    const onSubmit = handleSubmit(async (data: SigninData) => {
+        const response = await signIn("credentials", {
+            redirect: false,
+            email: data.email,
+            password: data.password
+        })
+
+        if (!response?.ok) {
+            console.log(response);
+        }
+
+        router.push("/dashboard")
+        
+    })
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={onSubmit}>
             <Flex direction="column" gap="2">
 
                 <label htmlFor="email">Email</label>
