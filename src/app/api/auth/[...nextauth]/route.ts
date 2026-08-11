@@ -14,7 +14,6 @@ const handler = NextAuth({
   providers: [
     CredentialsProvider({
       name: "credentials",
-
       credentials: {
         email: {
           label: "Email",
