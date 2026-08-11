@@ -5,11 +5,13 @@ import { Button, Card, Container, Flex, Heading, TextArea, TextField } from "@ra
 import axios from "axios"
 import { useRouter, useParams } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
+import { toast } from "sonner"
+
 
 const TaskNewPage = () => {
 
     const router = useRouter()
-    const params = useParams()
+    const params = useParams() as { projectId: string }
 
     const { control, handleSubmit } = useForm({
         defaultValues: {
@@ -24,9 +26,15 @@ const TaskNewPage = () => {
             await axios.post("/api/projects", data)
             router.push("/dashboard")
         } else {
-            console.log("Editando");
+            console.log("Editing...");
         }
     })
+
+    const handleDelete = async (projectId: string) => {
+        await axios.delete(`/api/projects/${projectId}`)
+        toast.success("Proyecto eliminado satisfactoriamente...")
+        router.push("/dashboard")
+    }
 
     return (
         <div>
@@ -65,11 +73,11 @@ const TaskNewPage = () => {
                                 {params.projectId ? "Edit Project" : "Create Project"}
                             </Button>
                         </form>
-                        
+
                         <div className="flex justify-end my-4">
                             {
                                 params.projectId && (
-                                    <Button color="red">
+                                    <Button color="red" onClick={() => handleDelete(params.projectId)}>
                                         <TrashIcon />
                                         Delete Project
                                     </Button>
