@@ -1,5 +1,5 @@
 import { conexion } from "@/libs/mysql";
-import NextAuth, { AuthOptions, DefaultSession } from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 
@@ -11,6 +11,10 @@ interface User {
 }
 
 export const authOptions: AuthOptions = {
+  session: {
+    strategy: "jwt",
+  },
+
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -58,7 +62,6 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-
       if (user) {
         token.id = user.id;
       }
@@ -67,7 +70,6 @@ export const authOptions: AuthOptions = {
     },
 
     async session({ session, token }) {
-
       if (session.user) {
         session.user.id = token.id;
       }

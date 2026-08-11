@@ -1,6 +1,6 @@
 import HeaderDashboard from "@/components/dashboard/HeaderDashboard"
 import { conexion } from "@/libs/mysql"
-import { Container, Grid } from "@radix-ui/themes"
+import { Container } from "@radix-ui/themes"
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import ProjectCard from "@/components/projects/ProjectCard";
