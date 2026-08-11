@@ -1,16 +1,28 @@
 import { conexion } from "@/libs/mysql";
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 
 interface User {
-    id: number
-    email: string
-    password: string
-    name: string
+  id: number;
+  email: string;
+  password: string;
+  name: string;
 }
 
-const handler = NextAuth({
+declare module "next-auth" {
+    interface Session {
+        user: {
+            id: string
+        } & DefaultSession["user"]
+    }
+
+    interface User {
+        id: string
+    }
+}
+
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -32,31 +44,52 @@ const handler = NextAuth({
 
         const { email, password } = credentials;
 
-        const users = await conexion.query(
+        const users = (await conexion.query(
           "SELECT * FROM user WHERE email = ?",
           [email],
-        ) as User[]
+        )) as User[];
 
-        const userFound = users[0]
+        const userFound = users[0];
 
-        if (!userFound) throw new Error("Credenciales invalidas...")
+        if (!userFound) throw new Error("Credenciales invalidas...");
 
-        const validPassword = await bcrypt.compare(password, userFound.password)
+        const validPassword = await bcrypt.compare(
+          password,
+          userFound.password,
+        );
 
-        if (!validPassword) throw new Error("Credenciales invalidas...")
-
+        if (!validPassword) throw new Error("Credenciales invalidas...");
 
         return {
-            id: String(userFound.id),
-            name: userFound.name,
-            email: userFound.email
-        }
+          id: String(userFound.id),
+          name: userFound.name,
+          email: userFound.email,
+        };
       },
     }),
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.sub as string;
+      }
+    
+      return session;
+    },
+  },
   pages: {
     signIn: "/auth/login",
   },
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
