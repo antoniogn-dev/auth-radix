@@ -4,6 +4,7 @@ import { TrashIcon } from "@radix-ui/react-icons"
 import { Button, Card, Container, Flex, Heading, TextArea, TextField } from "@radix-ui/themes"
 import axios from "axios"
 import { useRouter, useParams } from "next/navigation"
+import { useEffect } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -13,7 +14,7 @@ const TaskNewPage = () => {
     const router = useRouter()
     const params = useParams() as { projectId: string }
 
-    const { control, handleSubmit } = useForm({
+    const { control, handleSubmit, setValue } = useForm({
         defaultValues: {
             title: "",
             description: ""
@@ -26,7 +27,8 @@ const TaskNewPage = () => {
             await axios.post("/api/projects", data)
             router.push("/dashboard")
         } else {
-            console.log("Editing...");
+            await axios.put(`/api/projects/${params.projectId}`, data)
+            router.push("/dashboard")
         }
     })
 
@@ -35,6 +37,17 @@ const TaskNewPage = () => {
         toast.success("Proyecto eliminado satisfactoriamente...")
         router.push("/dashboard")
     }
+
+    useEffect(() => {
+        if (params.projectId) {
+            axios.get(`/api/projects/${Number(params.projectId)}`)
+                .then(response => {
+                    console.log("RESULTADO:  ", response)
+                    setValue("title", response.data.title)
+                    setValue("description", response.data.description)
+                })
+        }
+    }, [])
 
     return (
         <div>

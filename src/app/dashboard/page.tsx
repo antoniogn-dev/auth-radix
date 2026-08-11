@@ -30,11 +30,11 @@ const DashboardPage = async () => {
         <Container className="mt-10">
             <HeaderDashboard />
 
-            <Grid columns="3" gap="4" mt="4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {projects.map(project => (
                     <ProjectCard key={project.id} {...project} />
                 ))}
-            </Grid>
+            </div>
         </Container>
     )
 }
