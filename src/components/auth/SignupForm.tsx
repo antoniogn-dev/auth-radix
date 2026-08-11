@@ -4,6 +4,8 @@ import { Flex, Text, TextField } from "@radix-ui/themes"
 import { EnvelopeClosedIcon, LockClosedIcon, PersonIcon } from "@radix-ui/react-icons"
 import { Controller, useForm } from "react-hook-form"
 import axios from "axios"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 interface SignUpData {
     name: string
@@ -12,6 +14,8 @@ interface SignUpData {
 }
 
 const SignupForm = () => {
+
+    const router = useRouter()
 
     const { control, handleSubmit, formState: { errors } } = useForm<SignUpData>({
         defaultValues: {
@@ -24,8 +28,25 @@ const SignupForm = () => {
     const onSubmit = handleSubmit(async (data: SignUpData) => {
 
         const response = await axios.post("/api/auth/register", data)
-        console.log(response);
-        
+        console.log(response.status);
+
+
+        if (response.status === 201) {
+            const result = await signIn("credentials", {
+                email: response.data.email,
+                password: data.password,
+                redirect: false
+            })
+
+            if (!result?.ok) {
+                console.log(result?.error);
+                return
+            }
+
+            router.push("/dashboard")
+
+        }
+
     })
 
     return (
