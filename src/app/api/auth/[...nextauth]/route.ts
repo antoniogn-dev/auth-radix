@@ -10,18 +10,6 @@ interface User {
   name: string;
 }
 
-declare module "next-auth" {
-    interface Session {
-        user: {
-            id: string
-        } & DefaultSession["user"]
-    }
-
-    interface User {
-        id: string
-    }
-}
-
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
@@ -70,6 +58,7 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
+
       if (user) {
         token.id = user.id;
       }
@@ -78,10 +67,11 @@ export const authOptions: AuthOptions = {
     },
 
     async session({ session, token }) {
+
       if (session.user) {
-        session.user.id = token.sub as string;
+        session.user.id = token.id;
       }
-    
+
       return session;
     },
   },

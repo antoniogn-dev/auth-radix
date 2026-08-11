@@ -1,18 +1,40 @@
-"use client"
+import HeaderDashboard from "@/components/dashboard/HeaderDashboard"
+import { conexion } from "@/libs/mysql"
+import { Container, Grid } from "@radix-ui/themes"
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/route";
+import ProjectCard from "@/components/projects/ProjectCard";
 
-import { Button, Container, Heading } from "@radix-ui/themes"
-import { useRouter } from "next/navigation"
+interface Project {
+    id: number;
+    title: string;
+    description: string;
+}
 
-const DashboardPage = () => {
-    
-    const router = useRouter()
+const loadProjects = async (): Promise<Project[]> => {
+    const session = await getServerSession(authOptions)
+
+    const projects = await conexion.query(
+        "SELECT * FROM project WHERE userId = ?", [session?.user.id]
+    );
+
+    return projects as Project[];
+};
+
+
+const DashboardPage = async () => {
+
+    const projects = await loadProjects()
 
     return (
         <Container className="mt-10">
-            <div className="flex justify-between">
-                <Heading>Tasks</Heading>
-                <Button onClick={() => router.push("/dashboard/task/new")}>Add Task</Button>
-            </div>
+            <HeaderDashboard />
+
+            <Grid columns="3" gap="4" mt="4">
+                {projects.map(project => (
+                    <ProjectCard key={project.id} {...project} />
+                ))}
+            </Grid>
         </Container>
     )
 }
